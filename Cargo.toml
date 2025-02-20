@@ -1,0 +1,16 @@
+[package]
+name = "git_from_scratch"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.96"
+assert_cmd = "2.0.16"
+clap = { version = "4.5.30", features = ["derive"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+
+
+[[bin]]
+name = "git"
+path = "src/main.rs"
