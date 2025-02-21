@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::sync::LazyLock;
 use temp_testdir::TempDir;
-use tracing::instrument;
+use tracing::info;
 
 // create a new temporary directory and
 pub fn create_tmpdir_and_chenv() -> Result<String> {
@@ -18,5 +18,6 @@ pub fn create_tmpdir_and_chenv() -> Result<String> {
 pub static TRACING: LazyLock<()> = LazyLock::new(|| {
     if std::env::var("TESTING_LOG").is_ok() {
         tracing_subscriber::fmt::init();
+        info!("Initialized logging");
     }
 });
