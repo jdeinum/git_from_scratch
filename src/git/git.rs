@@ -17,6 +17,5 @@ fn init_git_repo(p: PathBuf) -> Result<()> {
 pub fn init_git_repo_in_current_dir() -> Result<()> {
     let cur = std::env::current_dir()?;
     debug!("creating git repo in {cur:?}");
-    // init_git_repo(cur)
-    Ok(())
+    init_git_repo(cur)
 }
