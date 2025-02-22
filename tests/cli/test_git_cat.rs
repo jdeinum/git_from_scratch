@@ -7,7 +7,7 @@ use std::sync::LazyLock;
 use temp_testdir::TempDir;
 
 #[test]
-pub fn test_git_init() -> Result<()> {
+pub fn test_git_cat() -> Result<()> {
     // init tracing
     LazyLock::force(&TRACING);
 
@@ -18,7 +18,9 @@ pub fn test_git_init() -> Result<()> {
 
     // run the command
     let mut cmd = Command::cargo_bin("git")?;
-    cmd.arg("init");
+    cmd.arg("cat-file");
+    cmd.arg("-p");
+    cmd.arg("hello");
     cmd.current_dir(&temp.as_ref());
 
     // first assert the command ran successfully
@@ -26,6 +28,8 @@ pub fn test_git_init() -> Result<()> {
 
     // now make sure the new folder exists
     assert!(Path::new(&full_path).exists());
+
+    // now we'll generate a "hello world" file
 
     Ok(())
 }
