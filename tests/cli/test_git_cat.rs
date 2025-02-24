@@ -20,7 +20,7 @@ pub fn test_git_cat() -> Result<()> {
     let mut cmd = Command::cargo_bin("git")?;
     cmd.arg("cat-file");
     cmd.arg("-p");
-    cmd.arg("hello");
+    cmd.arg("e88f7a929cd70b0274c4ea33b209c97fa845fdbc");
     cmd.current_dir(&temp.as_ref());
 
     // first assert the command ran successfully
