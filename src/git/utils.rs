@@ -1,6 +1,7 @@
+use super::parse_git_object_native;
+use crate::git::parser::parse_git_object;
 use anyhow::{Context, Ok, Result, ensure};
 use bytes::{Bytes, BytesMut};
-use memchr::memchr;
 use std::io::{Read, Write};
 
 /// This module contains helper functions for reading and writing git objects
@@ -58,12 +59,8 @@ pub fn read_file(hash: &str) -> Result<Bytes> {
 //
 // blob 11\0hello world
 pub fn convert_file(buf: Bytes) -> Result<String> {
-    // we'll use a nom parser in order to parse the file
-    use crate::git::parser::parse_git_object;
-
-    let (_, (_, _, content)) = parse_git_object(&buf)?;
-
-    Ok(String::from_utf8(content.to_vec().clone())?)
+    let (_, _, content) = parse_git_object_native(buf)?;
+    Ok(String::from_utf8(content.to_vec())?)
 }
 
 pub fn write_file(s: &str) -> Result<()> {
