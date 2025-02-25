@@ -1,7 +1,7 @@
 use crate::git::utils::create_directory;
 use crate::git::{convert_file, git_objects_dir_exists, read_file};
 use anyhow::{Result, ensure};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tracing::{debug, instrument};
 
 #[instrument(err)]
@@ -51,4 +51,23 @@ pub fn cat_git_object(hash: &str) -> Result<String> {
     let content = convert_file(buf)?;
 
     Ok(content)
+}
+
+pub enum StoreHash {
+    No,
+    Yes,
+}
+
+impl From<bool> for StoreHash {
+    fn from(value: bool) -> Self {
+        match value {
+            true => Self::Yes,
+            false => Self::No,
+        }
+    }
+}
+
+// TODO: Pass in an ouput object to print to
+pub fn hash_git_object(_filename: &Path, _should_hash: StoreHash) -> Result<String> {
+    todo!()
 }
