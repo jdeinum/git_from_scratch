@@ -27,5 +27,7 @@ pub fn test_git_init() -> Result<()> {
     // now make sure the new folder exists
     assert!(Path::new(&full_path).exists());
 
+    // TODO: Add tests for all of the needed directories and files
+
     Ok(())
 }

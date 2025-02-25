@@ -6,6 +6,7 @@ use nom::{
     character::complete::{alpha1, digit1, space1},
     combinator::map_res,
 };
+use tracing::debug;
 
 // TODO: Return a reference to the passed buffer rather than create a copy of owned data
 pub fn parse_git_object<'a>(buf: &'a [u8]) -> IResult<&'a [u8], (String, usize, Bytes)> {
@@ -81,8 +82,10 @@ fn parse_content(buf: &Bytes, index: usize, size: usize) -> Result<(usize, Bytes
 
 pub fn parse_git_object_native(buf: Bytes) -> Result<(String, usize, Bytes)> {
     let (current, otype) = parse_object_type(&buf, 0)?;
+    debug!("Parsed object type: {otype}");
 
     let (current, content_size) = parse_content_size(&buf, current)?;
+    debug!("Parsed content size: {content_size}");
 
     let (_, content) = parse_content(&buf, current, content_size)?;
 

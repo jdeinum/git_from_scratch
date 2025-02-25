@@ -1,8 +1,12 @@
 use super::parse_git_object_native;
-use crate::git::parser::parse_git_object;
 use anyhow::{Context, Ok, Result, ensure};
-use bytes::{Bytes, BytesMut};
-use std::io::{Read, Write};
+use bytes::Bytes;
+use flate2::bufread::ZlibDecoder;
+use std::{
+    io::{Read, Write},
+    path::PathBuf,
+};
+use tracing::debug;
 
 /// This module contains helper functions for reading and writing git objects
 
@@ -11,7 +15,7 @@ pub enum GitObjectType {
 }
 
 impl Write for GitObjectType {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+    fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
         todo!()
     }
 
@@ -35,9 +39,14 @@ pub fn read_file(hash: &str) -> Result<Bytes> {
         Bytes::from(f)
     };
 
+    debug!("read {} bytes from {hash}", file.len());
+
     // decompress using gzip
-    let mut decompressed_bytes = BytesMut::new();
-    let _n = flate2::read::GzDecoder::new(&file[..]).read(&mut decompressed_bytes[..])?;
+    let mut decompressed_bytes = Vec::new();
+    let mut decoder = ZlibDecoder::new(file.as_ref());
+    decoder.read_to_end(&mut decompressed_bytes)?;
+
+    debug!("got {} decompressed bytes", decompressed_bytes.len());
 
     // return the uncompressed bytes
     Ok(decompressed_bytes.into())
@@ -63,7 +72,7 @@ pub fn convert_file(buf: Bytes) -> Result<String> {
     Ok(String::from_utf8(content.to_vec())?)
 }
 
-pub fn write_file(s: &str) -> Result<()> {
+pub fn write_file(_s: &str) -> Result<()> {
     todo!()
 }
 
@@ -73,4 +82,14 @@ pub fn is_current_git_directory() -> bool {
 
 pub fn git_objects_dir_exists() -> bool {
     std::path::Path::new(".git/objects").exists()
+}
+
+pub fn create_directory(root_dir: PathBuf, name: &str) -> Result<()> {
+    let full_path = {
+        let mut x = root_dir.clone();
+        x.push(name);
+        x
+    };
+
+    std::fs::create_dir(full_path).map_err(|e| e.into())
 }
