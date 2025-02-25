@@ -1,9 +1,12 @@
 use crate::{
     cli::{Cli, Commands},
-    git::{cat_git_object, init_git_repo_in_current_dir, is_current_git_directory},
+    git::{
+        cat_git_object, hash_git_object, init_git_repo_in_current_dir, is_current_git_directory,
+    },
 };
 use anyhow::{Result, ensure};
 use clap::Parser;
+use std::path::Path;
 use tracing::info;
 
 pub fn run() -> Result<()> {
@@ -26,7 +29,16 @@ pub fn run() -> Result<()> {
         }
         Commands::CatFile { hash } => {
             info!("generating hash");
-            cat_git_object(&hash)?;
+            cat_git_object(hash)?;
+        }
+        Commands::HashFile {
+            write_to_store,
+            filename,
+        } => {
+            info!("generating git hash");
+            let hash =
+                hash_git_object(Path::new(&filename), write_to_store.unwrap_or(false).into())?;
+            print!("{hash}");
         }
     }
 

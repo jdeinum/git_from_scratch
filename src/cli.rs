@@ -15,4 +15,9 @@ pub enum Commands {
         #[arg(short = 'p')]
         hash: String,
     },
+    HashFile {
+        #[arg(short = 'w')]
+        write_to_store: Option<bool>,
+        filename: String,
+    },
 }

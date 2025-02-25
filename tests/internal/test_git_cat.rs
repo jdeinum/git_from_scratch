@@ -12,7 +12,7 @@ pub fn test_git_cat() -> Result<()> {
     LazyLock::force(&TRACING);
 
     // create a new temp directory for testing
-    let temp = TempDir::new("/tmp/rstest", false);
+    let temp = TempDir::new("/tmp/rstest", true);
 
     // initialize the directory
     let _ = init_git_repo(temp.to_path_buf())?;

@@ -1,7 +1,7 @@
-mod git;
+mod functionality;
 mod parser;
 mod utils;
 
-pub use git::*;
+pub use functionality::*;
 pub use parser::*;
 pub use utils::*;

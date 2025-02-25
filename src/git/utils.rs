@@ -1,3 +1,6 @@
+/** This module contains helper functions for reading and writing git objects
+*
+**/
 use super::parse_git_object_native;
 use anyhow::{Context, Ok, Result, ensure};
 use bytes::Bytes;
@@ -7,8 +10,6 @@ use std::{
     path::PathBuf,
 };
 use tracing::debug;
-
-/// This module contains helper functions for reading and writing git objects
 
 pub enum GitObjectType {
     Blob { buf: Bytes },
