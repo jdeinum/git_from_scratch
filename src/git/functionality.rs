@@ -81,7 +81,7 @@ pub fn hash_git_object(filename: &Path, should_hash: StoreHash) -> Result<String
         let mut sha = Sha1::new();
         sha.update(&file_bytes);
         let res = sha.finalize();
-        hex::encode(&res)
+        hex::encode(res)
     };
 
     // seperate into the directory and filename
@@ -109,7 +109,7 @@ pub fn hash_git_object(filename: &Path, should_hash: StoreHash) -> Result<String
 
         // write the bytes
         let mut f = std::fs::File::create(format!(".git/objects/{}/{}", dir, filename))?;
-        f.write(&compressed_bytes)?;
+        f.write_all(&compressed_bytes)?;
         f.flush()?;
     }
 

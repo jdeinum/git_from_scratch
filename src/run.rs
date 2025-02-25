@@ -29,7 +29,7 @@ pub fn run() -> Result<()> {
         }
         Commands::CatFile { hash } => {
             info!("generating hash");
-            cat_git_object(&hash)?;
+            cat_git_object(hash)?;
         }
         Commands::HashFile {
             write_to_store,
