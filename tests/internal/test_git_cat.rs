@@ -35,4 +35,3 @@ pub fn test_git_cat() -> Result<()> {
 
     Ok(())
 }
-
