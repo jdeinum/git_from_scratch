@@ -7,6 +7,7 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::LazyLock;
 use temp_testdir::TempDir;
+use tracing::debug;
 
 const FILENAME: &str = "test.txt";
 const CONTENTS: &str = "hello world!";
@@ -17,7 +18,7 @@ pub fn test_git_hash() -> Result<()> {
     LazyLock::force(&TRACING);
 
     // create a new temp directory for testing
-    let temp = TempDir::new("/tmp/rstest", true);
+    let temp = TempDir::new("/tmp/rstest", false);
 
     // initialize the directory
     let _ = init_git_repo(temp.to_path_buf())?;
@@ -30,6 +31,7 @@ pub fn test_git_hash() -> Result<()> {
 
     // now we will get the git hash for that file
     let hash = hash_git_object(Path::new(FILENAME), StoreHash::Yes)?;
+    debug!("object hash: {hash}");
 
     // now we'll read the contents of file using the git cat-file command
     let contents = {
