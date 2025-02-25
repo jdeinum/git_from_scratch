@@ -4,6 +4,7 @@ use anyhow::{Result, ensure};
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
 use sha1::{Digest, Sha1};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use tracing::{debug, info, instrument};
 
@@ -86,9 +87,14 @@ pub fn hash_git_object(filename: &Path, should_hash: StoreHash) -> Result<String
     // seperate into the directory and filename
     let (dir, filename) = hash.split_at(2);
 
+    // write the header to the buffer
+    let header = format!("blob {}\0", file_bytes.len());
+
     // compress it using zlib
     let compressed_bytes = {
-        let encoder = ZlibEncoder::new(file_bytes, Compression::default());
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(header.as_bytes())?;
+        encoder.write_all(&file_bytes)?;
         encoder.finish()
     }?;
 
@@ -101,12 +107,10 @@ pub fn hash_git_object(filename: &Path, should_hash: StoreHash) -> Result<String
             std::fs::create_dir(format!(".git/objects/{dir}"))?;
         }
 
-        // write the bytes to the file
-        debug!("writing the bytes to file");
-        std::fs::write(
-            format!(".git/objects/{}/{}", dir, filename),
-            compressed_bytes,
-        )?;
+        // write the bytes
+        let mut f = std::fs::File::create(format!(".git/objects/{}/{}", dir, filename))?;
+        f.write(&compressed_bytes)?;
+        f.flush()?;
     }
 
     // return the hash
