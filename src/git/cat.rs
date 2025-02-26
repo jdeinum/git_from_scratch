@@ -1,4 +1,4 @@
-use crate::git::{convert_file, git_objects_dir_exists, read_file};
+use crate::git::utils::{convert_file, git_objects_dir_exists, read_file};
 use anyhow::{Result, ensure};
 use std::io::Write;
 use tracing::debug;

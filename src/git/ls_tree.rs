@@ -1,4 +1,5 @@
-use crate::git::{parse_git_tree, read_file};
+use super::parsers::parse_git_tree;
+use crate::git::utils::read_file;
 use anyhow::Result;
 use itertools::*;
 use std::io::Write;

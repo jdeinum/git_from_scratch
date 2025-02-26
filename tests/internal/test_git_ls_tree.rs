@@ -3,8 +3,10 @@ use anyhow::Result;
 use git_from_scratch::git::LsTreeOptions;
 use git_from_scratch::git::init_git_repo;
 use git_from_scratch::git::ls_tree_git;
+use std::process::Command;
 use std::sync::LazyLock;
 use temp_testdir::TempDir;
+use tracing::debug;
 
 const FILENAME: &str = "test.txt";
 const CONTENTS: &str = "hello world!";
@@ -35,7 +37,16 @@ pub fn test_git_ls_tree() -> Result<()> {
 
     // create a tree object, and print out the contents using the --name-only flag
     // TODO!
-    let output = "todo";
+    let output = {
+        let o = Command::new("git")
+            .current_dir(temp.as_ref())
+            .arg("write-tree")
+            .output()?
+            .stdout;
+        String::from_utf8(o)
+    }?;
+
+    debug!("write-tree output: {output}");
 
     // create a buffer we'll be writing into
     let mut buf: Vec<u8> = Vec::new();

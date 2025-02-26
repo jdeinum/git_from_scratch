@@ -1,7 +1,8 @@
+use crate::git::parsers::{parse_alpha, parse_content, parse_usize_string};
 use anyhow::Result;
 use bytes::Bytes;
 use nom::{
-    AsChar, IResult, Parser,
+    IResult, Parser,
     bytes::complete::{tag, take},
     character::complete::{alpha1, digit1, space1},
     combinator::map_res,
@@ -9,6 +10,7 @@ use nom::{
 use tracing::debug;
 
 // TODO: Return a reference to the passed buffer rather than create a copy of owned data
+#[allow(unused)]
 pub fn parse_git_object<'a>(buf: &'a [u8]) -> IResult<&'a [u8], (String, usize, Bytes)> {
     // Parse the object type
     let (b, obj_type) = map_res(alpha1, |x: &[u8]| String::from_utf8(x.to_vec())).parse(buf)?;
@@ -33,55 +35,8 @@ pub fn parse_git_object<'a>(buf: &'a [u8]) -> IResult<&'a [u8], (String, usize, 
     Ok((b, (obj_type, size, Bytes::copy_from_slice(content))))
 }
 
-fn parse_object_type(buf: &Bytes, index: usize) -> Result<(usize, String)> {
-    let mut x = buf
-        .iter()
-        .skip(index)
-        .enumerate()
-        .take_while(|(_, b)| b.as_char() != ' ')
-        .fold((0, String::new()), |mut acc, x| {
-            acc.0 = x.0 + index;
-            acc.1.push(x.1.as_char());
-            acc
-        });
-
-    // somereallylonggitobjecttypehere 12\0 hello world!
-    //                               |
-    // at this point, index is here  |
-    // so we add 2 to it to move the index to the first character after the space
-    x = (x.0 + 2, x.1);
-    Ok(x)
-}
-
-fn parse_content_size(buf: &Bytes, index: usize) -> Result<(usize, usize)> {
-    let x = buf
-        .iter()
-        .skip(index)
-        .enumerate()
-        .take_while(|(_, b)| b.as_char().is_numeric())
-        .fold((index, String::new()), |mut acc, x| {
-            acc.0 = index + x.0;
-            acc.1.push(x.1.as_char());
-            acc
-        });
-
-    // blob 12\0hello world!
-    //       |
-    // index is here
-    // so we add 2 to it to move the index to the first character after the space
-    let x = (x.0 + 2, x.1.parse::<usize>()?);
-    Ok(x)
-}
-
-fn parse_content(buf: &Bytes, index: usize, size: usize) -> Result<(usize, Bytes)> {
-    Ok((
-        index + size,
-        Bytes::copy_from_slice(&buf[index..index + size]),
-    ))
-}
-
 // Reads in the uncompressed bytes, and extracts the string contents
-// The format of a blob object file looks like this (after Zlib decompression):
+// The format of a blob object file looks: like this (after Zlib decompression):
 //
 // blob <size>\0<content>
 //
@@ -96,11 +51,18 @@ fn parse_content(buf: &Bytes, index: usize, size: usize) -> Result<(usize, Bytes
 //
 // blob 11\0hello world
 pub fn parse_git_object_native(buf: Bytes) -> Result<(String, usize, Bytes)> {
-    let (current, otype) = parse_object_type(&buf, 0)?;
+    let (current, otype) = parse_alpha(&buf, 0)?;
     debug!("Parsed object type: {otype}");
 
-    let (current, content_size) = parse_content_size(&buf, current)?;
+    // move the current pointer 1 past the space
+    let current = current + 1;
+
+    let (current, content_size) = parse_usize_string(&buf, current)?;
+    let content_size = content_size.parse::<usize>()?;
     debug!("Parsed content size: {content_size}");
+
+    // move the current pointer 1 past the null byte
+    let current = current + 1;
 
     let (_, content) = parse_content(&buf, current, content_size)?;
 

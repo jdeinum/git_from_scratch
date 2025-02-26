@@ -1,8 +1,8 @@
 use crate::{
     cli::{Cli, Commands},
     git::{
-        LsTreeOptions, cat_git_object, hash_git_object, init_git_repo_in_current_dir,
-        is_current_git_directory, ls_tree_git,
+        LsTreeOptions, cat_git_object, hash_git_object, init_git_repo_in_current_dir, ls_tree_git,
+        utils::is_current_git_directory,
     },
 };
 use anyhow::{Result, ensure};

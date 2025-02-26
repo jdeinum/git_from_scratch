@@ -1,4 +1,5 @@
-use crate::git::{GitTree, TreeEntry};
+use crate::git::parsers::{parse_alpha, parse_content, parse_usize_string};
+use crate::git::utils::{GitTree, TreeEntry};
 use anyhow::{Result, ensure};
 use bytes::Bytes;
 
@@ -22,10 +23,9 @@ pub fn parse_git_tree(buf: Bytes) -> Result<GitTree> {
 // NOTE: The SHA is not necessarily valid UTF-8
 fn parse_tree_internal(buf: &[u8]) -> Result<GitTree> {
     let mut res: Vec<TreeEntry> = Vec::new();
-    let mut current = 0;
 
     let (header_finish, content_size) = parse_tree_header(buf)?;
-    current = header_finish;
+    let mut current = header_finish;
 
     while current < content_size.0 + header_finish {
         let (c, entry) = parse_single_tree_entry(buf, current)?;
@@ -38,25 +38,39 @@ fn parse_tree_internal(buf: &[u8]) -> Result<GitTree> {
 
 struct TreeContentSize(usize);
 fn parse_tree_header(buf: &[u8]) -> Result<(usize, TreeContentSize)> {
+    let current = 0;
+
     // parse the tree keyword
+    let (current, otype) = parse_alpha(buf, current)?;
+    ensure!(otype == "tree".to_string(), "expecting tree as object type");
+
+    // move the cursor 1 past the space
+    let current = current + 1;
 
     // parse the size
+    let (current, content_size) = parse_usize_string(buf, current)?;
 
-    // parse the null byte
+    // move the cursor 1 past the null byte
+    let current = current + 1;
 
-    // move the current cursor one position past the null byte
-
-    todo!()
+    Ok((current, TreeContentSize(content_size.parse()?)))
 }
 
 fn parse_single_tree_entry(buf: &[u8], start: usize) -> Result<(usize, TreeEntry)> {
     // parse the mode
+    let (current, mode) = parse_usize_string(buf, start)?;
 
-    // parse the space
+    // move the cursor 1 past the space
+    let current = current + 1;
 
-    // parsr the name
+    // parse the name
+    let (current, name) = parse_alpha(buf, current)?;
+
+    // move the cursor 1 past the null byte
+    let current = current + 1;
 
     // parse the sha
+    let (current, sha) = parse_content(buf, current, 20)?;
 
-    todo!()
+    Ok((current, TreeEntry { name, mode, sha }))
 }
