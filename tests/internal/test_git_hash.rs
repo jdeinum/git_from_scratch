@@ -18,13 +18,13 @@ pub fn test_git_hash() -> Result<()> {
     LazyLock::force(&TRACING);
 
     // create a new temp directory for testing
-    let temp = TempDir::new("/tmp/rstest", false);
-
-    // initialize the directory
-    let _ = init_git_repo(temp.to_path_buf())?;
+    let temp = TempDir::new("/tmp/git_hash", false);
 
     // change to the temp
     std::env::set_current_dir(&temp)?;
+
+    // initialize the directory
+    let _ = init_git_repo(temp.to_path_buf())?;
 
     // create a file in the temporary directory
     std::fs::write(FILENAME, CONTENTS)?;

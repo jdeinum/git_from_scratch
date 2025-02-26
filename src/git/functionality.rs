@@ -31,6 +31,8 @@ pub fn init_git_repo(p: PathBuf) -> Result<String> {
     head_file_path.push("HEAD");
     std::fs::write(head_file_path, "ref: refs/heads/main\n")?;
 
+    debug!("initialized repo");
+
     Ok(new_path.to_string_lossy().to_string())
 }
 
