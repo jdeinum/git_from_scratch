@@ -28,10 +28,13 @@ pub fn test_git_cat() -> Result<()> {
     // set the current directory
     std::env::set_current_dir(&temp)?;
 
-    // now cat the file
-    let output = cat_git_object(&hash)?;
+    // create a buffer we'll be writing into
+    let mut buf: Vec<u8> = Vec::new();
 
-    assert_eq!(output.trim(), "hello world!".to_string());
+    // now cat the file
+    cat_git_object(&hash, &mut buf)?;
+
+    assert_eq!(buf, "hello world!".as_bytes());
 
     Ok(())
 }

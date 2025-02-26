@@ -2,6 +2,7 @@ use crate::{
     cli::{Cli, Commands},
     git::{
         cat_git_object, hash_git_object, init_git_repo_in_current_dir, is_current_git_directory,
+        ls_tree_git,
     },
 };
 use anyhow::{Result, ensure};
@@ -20,6 +21,9 @@ pub fn run() -> Result<()> {
         ensure!(is_current_git_directory(), "Not a git directory");
     }
 
+    // get our stdout object
+    let stdo = std::io::stdout().lock();
+
     // SAFETY:
     // safe as long as clap sees that there is no argument passed into the function
     match &cli.command.unwrap() {
@@ -29,16 +33,22 @@ pub fn run() -> Result<()> {
         }
         Commands::CatFile { hash } => {
             info!("generating hash");
-            cat_git_object(hash)?;
+            cat_git_object(hash, stdo)?;
         }
         Commands::HashFile {
             write_to_store,
             filename,
         } => {
             info!("generating git hash");
-            let hash =
-                hash_git_object(Path::new(&filename), write_to_store.unwrap_or(false).into())?;
-            print!("{hash}");
+            hash_git_object(
+                Path::new(&filename),
+                write_to_store.unwrap_or(false).into(),
+                stdo,
+            )?;
+        }
+        Commands::LsTree { hash } => {
+            info!("listing tree");
+            ls_tree_git(hash, stdo)?;
         }
     }
 

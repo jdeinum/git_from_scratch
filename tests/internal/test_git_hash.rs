@@ -7,7 +7,6 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::LazyLock;
 use temp_testdir::TempDir;
-use tracing::debug;
 
 const FILENAME: &str = "test.txt";
 const CONTENTS: &str = "hello world!";
@@ -29,9 +28,14 @@ pub fn test_git_hash() -> Result<()> {
     // create a file in the temporary directory
     std::fs::write(FILENAME, CONTENTS)?;
 
+    // create the buffer for our hash
+    let mut buf: Vec<u8> = Vec::new();
+
     // now we will get the git hash for that file
-    let hash = hash_git_object(Path::new(FILENAME), StoreHash::Yes)?;
-    debug!("object hash: {hash}");
+    hash_git_object(Path::new(FILENAME), StoreHash::Yes, &mut buf)?;
+
+    // convert the new buffer into a String so we can pass it to the real git command
+    let hash = String::from_utf8(buf)?;
 
     // now we'll read the contents of file using the git cat-file command
     let contents = {

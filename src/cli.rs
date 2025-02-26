@@ -20,4 +20,7 @@ pub enum Commands {
         write_to_store: Option<bool>,
         filename: String,
     },
+    LsTree {
+        hash: String,
+    },
 }
