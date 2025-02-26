@@ -10,12 +10,12 @@ pub static TRACING: LazyLock<()> = LazyLock::new(|| {
     }
 });
 
-pub fn create_object_and_return_hash(path: &str) -> Result<String> {
+pub fn create_object_and_return_hash(dir: &str, filename: &str) -> Result<String> {
     let hash = std::process::Command::new("git")
-        .current_dir(path)
+        .current_dir(dir)
         .arg("hash-object")
         .arg("-w")
-        .arg("test.txt")
+        .arg(filename)
         .output()?
         .stdout;
 

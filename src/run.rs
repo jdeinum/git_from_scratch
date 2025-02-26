@@ -1,8 +1,8 @@
 use crate::{
     cli::{Cli, Commands},
     git::{
-        cat_git_object, hash_git_object, init_git_repo_in_current_dir, is_current_git_directory,
-        ls_tree_git,
+        LsTreeOptions, cat_git_object, hash_git_object, init_git_repo_in_current_dir,
+        is_current_git_directory, ls_tree_git,
     },
 };
 use anyhow::{Result, ensure};
@@ -46,9 +46,16 @@ pub fn run() -> Result<()> {
                 stdo,
             )?;
         }
-        Commands::LsTree { hash } => {
+        Commands::LsTree { hash, name_only } => {
             info!("listing tree");
-            ls_tree_git(hash, stdo)?;
+
+            ls_tree_git(
+                hash,
+                LsTreeOptions {
+                    name_only: name_only.unwrap_or(false),
+                },
+                stdo,
+            )?;
         }
     }
 

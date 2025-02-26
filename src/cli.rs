@@ -21,6 +21,8 @@ pub enum Commands {
         filename: String,
     },
     LsTree {
+        #[arg(long = "name-only")]
+        name_only: Option<bool>,
         hash: String,
     },
 }
