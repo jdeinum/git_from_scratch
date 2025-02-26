@@ -80,6 +80,21 @@ fn parse_content(buf: &Bytes, index: usize, size: usize) -> Result<(usize, Bytes
     ))
 }
 
+// Reads in the uncompressed bytes, and extracts the string contents
+// The format of a blob object file looks like this (after Zlib decompression):
+//
+// blob <size>\0<content>
+//
+// <size> is the size of the content (in bytes)
+//
+// \0 is a null byte
+//
+// <content> is the actual content of the file
+//
+// For example, if the contents of a file are hello world, the blob object file would look like
+// this (after Zlib decompression):
+//
+// blob 11\0hello world
 pub fn parse_git_object_native(buf: Bytes) -> Result<(String, usize, Bytes)> {
     let (current, otype) = parse_object_type(&buf, 0)?;
     debug!("Parsed object type: {otype}");

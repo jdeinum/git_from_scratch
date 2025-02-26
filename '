@@ -59,7 +59,6 @@ pub fn create_directory(root_dir: PathBuf, name: &str) -> Result<()> {
     std::fs::create_dir(full_path).map_err(|e| e.into())
 }
 
-#[derive(Debug)]
 pub struct TreeEntry {
     pub name: String,
     pub mode: String,
