@@ -1,4 +1,6 @@
-use crate::git::parsers::{parse_alpha, parse_content, parse_usize_string};
+use crate::git::parsers::{
+    parse_alpha, parse_content, parse_null, parse_space, parse_usize_string,
+};
 use anyhow::Result;
 use bytes::Bytes;
 use nom::{
@@ -51,19 +53,23 @@ pub fn parse_git_object<'a>(buf: &'a [u8]) -> IResult<&'a [u8], (String, usize, 
 //
 // blob 11\0hello world
 pub fn parse_git_object_native(buf: Bytes) -> Result<(String, usize, Bytes)> {
+    // parse the name
     let (current, otype) = parse_alpha(&buf, 0)?;
     debug!("Parsed object type: {otype}");
 
-    // move the current pointer 1 past the space
-    let current = current + 1;
+    // parse the first space
+    let (current, _) = parse_space(&buf, current)?;
+    debug!("Parsed space");
 
+    // parse the content size
     let (current, content_size) = parse_usize_string(&buf, current)?;
     let content_size = content_size.parse::<usize>()?;
     debug!("Parsed content size: {content_size}");
 
-    // move the current pointer 1 past the null byte
-    let current = current + 1;
+    // parse the null byte
+    let (current, _) = parse_null(&buf, current)?;
 
+    // parse the content
     let (_, content) = parse_content(&buf, current, content_size)?;
 
     Ok((otype, content_size, content))

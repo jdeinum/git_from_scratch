@@ -1,7 +1,8 @@
-use crate::git::parsers::{parse_alpha, parse_content, parse_usize_string};
+use crate::git::parsers::{parse_alpha, parse_content, parse_until_null, parse_usize_string};
 use crate::git::utils::{GitTree, TreeEntry};
 use anyhow::{Result, ensure};
 use bytes::Bytes;
+use tracing::debug;
 
 pub fn parse_git_tree(buf: Bytes) -> Result<GitTree> {
     parse_tree_internal(&buf)
@@ -26,6 +27,7 @@ fn parse_tree_internal(buf: &[u8]) -> Result<GitTree> {
 
     let (header_finish, content_size) = parse_tree_header(buf)?;
     let mut current = header_finish;
+    debug!("content_size: {}", content_size.0);
 
     while current < content_size.0 + header_finish {
         let (c, entry) = parse_single_tree_entry(buf, current)?;
@@ -59,12 +61,14 @@ fn parse_tree_header(buf: &[u8]) -> Result<(usize, TreeContentSize)> {
 fn parse_single_tree_entry(buf: &[u8], start: usize) -> Result<(usize, TreeEntry)> {
     // parse the mode
     let (current, mode) = parse_usize_string(buf, start)?;
+    debug!("parsed mode: {mode}");
 
     // move the cursor 1 past the space
     let current = current + 1;
 
     // parse the name
-    let (current, name) = parse_alpha(buf, current)?;
+    let (current, name) = parse_until_null(buf, current)?;
+    debug!("parsed name: {name}");
 
     // move the cursor 1 past the null byte
     let current = current + 1;
@@ -73,4 +77,35 @@ fn parse_single_tree_entry(buf: &[u8], start: usize) -> Result<(usize, TreeEntry
     let (current, sha) = parse_content(buf, current, 20)?;
 
     Ok((current, TreeEntry { name, mode, sha }))
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use anyhow::Ok;
+
+    #[test]
+    fn test_parse_alpha() -> Result<()> {
+        let m = "tree 12\0hello world!";
+        assert_eq!(parse_alpha(m.as_bytes(), 0)?.1, "tree".to_string());
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_size() -> Result<()> {
+        let m = "tree 12\0hello world!";
+        assert_eq!(parse_usize_string(m.as_bytes(), 5)?.1, "12".to_string());
+        Ok(())
+    }
+
+    #[test]
+    fn test_parse_content() -> Result<()> {
+        let m = "tree 12\0hello world!";
+        assert_eq!(
+            &parse_content(m.as_bytes(), 8, 12)?.1,
+            "hello world!".as_bytes()
+        );
+        Ok(())
+    }
 }
