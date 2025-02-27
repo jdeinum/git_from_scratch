@@ -25,4 +25,5 @@ pub enum Commands {
         name_only: Option<bool>,
         hash: String,
     },
+    WriteTree {},
 }

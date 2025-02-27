@@ -24,3 +24,7 @@ pub fn create_object_and_return_hash(dir: &str, filename: &str) -> Result<String
 
     Ok(hash.trim().to_string())
 }
+
+pub fn create_tree() -> Result<()> {
+    todo!()
+}

@@ -44,7 +44,7 @@ fn parse_tree_header(buf: &[u8]) -> Result<(usize, TreeContentSize)> {
 
     // parse the tree keyword
     let (current, otype) = parse_alpha(buf, current)?;
-    ensure!(otype == "tree".to_string(), "expecting tree as object type");
+    ensure!(&otype == "tree", "expecting tree as object type");
 
     // move the cursor 1 past the space
     let current = current + 1;

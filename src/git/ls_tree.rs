@@ -31,7 +31,7 @@ pub fn ls_tree_git(hash: &str, options: LsTreeOptions, mut w: impl Write) -> Res
                 .map(|x| x.name.clone())
                 .sorted()
                 .join("\n");
-            s.push_str(&format!("{names}"));
+            s.push_str(&names);
         }
     }
 
