@@ -14,4 +14,4 @@ codecrafters without codecrafters >.<
 ## Non Goals
 
 1. Performance is a consideration but not a priority
-2. Following the stages idenitcally is not something I care about
+2. Following the stages word for word is not something I care about
