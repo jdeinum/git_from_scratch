@@ -1,7 +1,14 @@
-mod functionality;
-mod parser;
-mod utils;
+mod cat;
+mod hash;
+mod init;
+mod ls_tree;
+mod write_tree;
 
-pub use functionality::*;
-pub use parser::*;
-pub use utils::*;
+pub use cat::*;
+pub use hash::*;
+pub use init::*;
+pub use ls_tree::*;
+pub use write_tree::*;
+
+pub mod parsers;
+pub mod utils;

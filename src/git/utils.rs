@@ -1,29 +1,12 @@
+use crate::git::parsers::*;
 /** This module contains helper functions for reading and writing git objects
 *
 **/
-use super::parse_git_object_native;
 use anyhow::{Context, Ok, Result, ensure};
 use bytes::Bytes;
 use flate2::bufread::ZlibDecoder;
-use std::{
-    io::{Read, Write},
-    path::PathBuf,
-};
+use std::{io::Read, path::PathBuf};
 use tracing::debug;
-
-pub enum GitObjectType {
-    Blob { buf: Bytes },
-}
-
-impl Write for GitObjectType {
-    fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
-        todo!()
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        todo!()
-    }
-}
 
 // Returns the uncompressed bytes from the file associated with the hash
 pub fn read_file(hash: &str) -> Result<Bytes> {
@@ -53,28 +36,9 @@ pub fn read_file(hash: &str) -> Result<Bytes> {
     Ok(decompressed_bytes.into())
 }
 
-// Reads in the uncompressed bytes, and extracts the string contents
-// The format of a blob object file looks like this (after Zlib decompression):
-//
-// blob <size>\0<content>
-//
-// <size> is the size of the content (in bytes)
-//
-// \0 is a null byte
-//
-// <content> is the actual content of the file
-//
-// For example, if the contents of a file are hello world, the blob object file would look like
-// this (after Zlib decompression):
-//
-// blob 11\0hello world
 pub fn convert_file(buf: Bytes) -> Result<String> {
     let (_, _, content) = parse_git_object_native(buf)?;
     Ok(String::from_utf8(content.to_vec())?)
-}
-
-pub fn write_file(_s: &str) -> Result<()> {
-    todo!()
 }
 
 pub fn is_current_git_directory() -> bool {
@@ -93,4 +57,16 @@ pub fn create_directory(root_dir: PathBuf, name: &str) -> Result<()> {
     };
 
     std::fs::create_dir(full_path).map_err(|e| e.into())
+}
+
+#[derive(Debug)]
+pub struct TreeEntry {
+    pub name: String,
+    pub mode: String,
+    pub sha: Bytes,
+}
+
+#[derive(Debug)]
+pub struct GitTree {
+    pub entries: Vec<TreeEntry>,
 }

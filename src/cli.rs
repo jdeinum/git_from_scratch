@@ -20,4 +20,10 @@ pub enum Commands {
         write_to_store: Option<bool>,
         filename: String,
     },
+    LsTree {
+        #[arg(long = "name-only")]
+        name_only: Option<bool>,
+        hash: String,
+    },
+    WriteTree {},
 }
