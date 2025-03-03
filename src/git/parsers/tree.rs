@@ -1,8 +1,19 @@
 use crate::git::parsers::{parse_alpha, parse_content, parse_until_null, parse_usize_string};
-use crate::git::utils::{GitTree, TreeEntry};
 use anyhow::{Result, ensure};
 use bytes::Bytes;
 use tracing::debug;
+
+#[derive(Debug)]
+pub struct TreeEntry {
+    pub name: String,
+    pub mode: String,
+    pub sha: Bytes,
+}
+
+#[derive(Debug)]
+pub struct GitTree {
+    pub entries: Vec<TreeEntry>,
+}
 
 pub fn parse_git_tree(buf: Bytes) -> Result<GitTree> {
     parse_tree_internal(&buf)

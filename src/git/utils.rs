@@ -5,8 +5,54 @@ use crate::git::parsers::*;
 use anyhow::{Context, Ok, Result, ensure};
 use bytes::Bytes;
 use flate2::bufread::ZlibDecoder;
-use std::{io::Read, path::PathBuf};
+use std::{
+    io::Read,
+    marker::PhantomData,
+    path::{Path, PathBuf},
+};
 use tracing::debug;
+
+// our trait to mark our git objects
+trait GitObjectType {}
+
+// a generic object that contains one of our git object types
+pub struct GitObject<T: GitObjectType> {
+    pub object_sha: String,
+    pub object_type: PhantomData<T>,
+    pub uncompressed_bytes: Bytes,
+}
+
+// our type of git objects
+pub struct GitTree {}
+pub struct GitBlob {}
+pub struct GitCommit {}
+impl GitObjectType for GitTree {}
+impl GitObjectType for GitBlob {}
+impl GitObjectType for GitCommit {}
+
+pub fn decompress_git_object<T>(buf: Bytes) -> Result<GitObject<T>> {
+    todo!()
+}
+
+pub fn compress_git_object<T>(buf: &GitObject<T>) -> Result<Bytes> {
+    todo!()
+}
+
+pub fn get_sha1(buf: &[u8]) -> String {
+    todo!()
+}
+
+pub fn store_git_object_if_not_exists<T>(obj: &GitObject<T>) -> Result<bool> {
+    todo!()
+}
+
+pub fn git_object_exists(object_sha1: &str) -> Result<bool> {
+    todo!()
+}
+
+pub fn get_git_blob(p: &Path) -> Result<GitObject<GitBlob>> {
+    todo!()
+}
 
 // Returns the uncompressed bytes from the file associated with the hash
 pub fn read_file(hash: &str) -> Result<Bytes> {
@@ -57,16 +103,4 @@ pub fn create_directory(root_dir: PathBuf, name: &str) -> Result<()> {
     };
 
     std::fs::create_dir(full_path).map_err(|e| e.into())
-}
-
-#[derive(Debug)]
-pub struct TreeEntry {
-    pub name: String,
-    pub mode: String,
-    pub sha: Bytes,
-}
-
-#[derive(Debug)]
-pub struct GitTree {
-    pub entries: Vec<TreeEntry>,
 }
