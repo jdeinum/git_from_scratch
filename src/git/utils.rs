@@ -6,52 +6,53 @@ use anyhow::{Context, Ok, Result, ensure};
 use bytes::Bytes;
 use flate2::bufread::ZlibDecoder;
 use std::{
-    io::Read,
-    marker::PhantomData,
+    fmt,
+    io::{BufRead, Read},
     path::{Path, PathBuf},
 };
 use tracing::debug;
 
-// our trait to mark our git objects
-trait GitObjectType {}
-
-// a generic object that contains one of our git object types
-pub struct GitObject<T: GitObjectType> {
-    pub object_sha: String,
-    pub object_type: PhantomData<T>,
-    pub uncompressed_bytes: Bytes,
+pub(crate) enum GitObjectType {
+    Blob,
+    Tree,
+    Commit,
 }
 
-// our type of git objects
-pub struct GitTree {}
-pub struct GitBlob {}
-pub struct GitCommit {}
-impl GitObjectType for GitTree {}
-impl GitObjectType for GitBlob {}
-impl GitObjectType for GitCommit {}
-
-pub fn decompress_git_object<T>(buf: Bytes) -> Result<GitObject<T>> {
-    todo!()
+impl fmt::Display for GitObjectType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            GitObjectType::Blob => write!(f, "blob"),
+            GitObjectType::Tree => write!(f, "tree"),
+            GitObjectType::Commit => write!(f, "commit"),
+        }
+    }
 }
 
-pub fn compress_git_object<T>(buf: &GitObject<T>) -> Result<Bytes> {
-    todo!()
+// the main idea behind this is that different methods will return a git object with the correct
+// kind, and a reader that you can use to read the remaining bytes fr with the correct kind, and a
+// reader that you can use to read the remaining bytes from.
+pub(crate) struct GitObject<R> {
+    kind: GitObjectType,
+    expected_length: usize,
+    reader: R,
 }
 
-pub fn get_sha1(buf: &[u8]) -> String {
-    todo!()
-}
+impl GitObject<()> {
+    pub(crate) fn read_blob_from_file(
+        filename: impl AsRef<Path>,
+    ) -> Result<GitObject<impl BufRead>> {
+        todo!()
+    }
 
-pub fn store_git_object_if_not_exists<T>(obj: &GitObject<T>) -> Result<bool> {
-    todo!()
-}
+    pub(crate) fn read(hash: &str) -> Result<GitObject<impl BufRead>> {
+        // first we need to split the hash into its dir and remaining bytes
 
-pub fn git_object_exists(object_sha1: &str) -> Result<bool> {
-    todo!()
-}
-
-pub fn get_git_blob(p: &Path) -> Result<GitObject<GitBlob>> {
-    todo!()
+        Ok(GitObject {
+            kind: GitObjectType::Blob,
+            expected_length: 10,
+            reader: Vec::new(),
+        })
+    }
 }
 
 // Returns the uncompressed bytes from the file associated with the hash
