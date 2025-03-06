@@ -1,11 +1,10 @@
 use crate::utils::{TRACING, create_and_swap_to_temp_dir};
 use anyhow::{Context, Result};
 use assert_cmd::output::OutputOkExt;
-use predicates::prelude::*;
 use std::{path::PathBuf, sync::LazyLock};
 
 #[test]
-pub fn test_git_cat() -> Result<()> {
+pub fn test_git_hash() -> Result<()> {
     // init tracing
     LazyLock::force(&TRACING);
 
@@ -23,7 +22,8 @@ pub fn test_git_cat() -> Result<()> {
     std::fs::write(&filename, b"hello world!").unwrap();
 
     // write the object to storage using git hash-object -w
-    let hash = std::process::Command::new("git")
+    let hash = assert_cmd::Command::cargo_bin("git")
+        .unwrap()
         .arg("hash-object")
         .arg("-w")
         .arg("test.txt")
@@ -33,17 +33,15 @@ pub fn test_git_cat() -> Result<()> {
     let hash = std::str::from_utf8(&hash).unwrap();
 
     // now run our program to cat the file
-    let output = assert_cmd::Command::cargo_bin("git")
-        .unwrap()
+    let output = std::process::Command::new("git")
         .arg("cat-file")
         .arg("-p")
-        .arg(hash)
-        .assert();
+        .arg(hash.trim())
+        .output()
+        .unwrap()
+        .stdout;
 
-    output
-        .success()
-        .stdout(predicate::eq(b"hello world!" as &[u8]));
+    assert_eq!(output, b"hello world!");
 
-    // make sure it printed hello world!
     Ok(())
 }

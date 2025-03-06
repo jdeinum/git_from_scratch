@@ -12,15 +12,19 @@ pub enum Commands {
     /// Initializes a new git repository in the current directory
     Init {},
     CatFile {
+        /// Pretty Print
         #[arg(short = 'p')]
+        pretty_print: bool,
         hash: String,
     },
-    HashFile {
+    HashObject {
+        /// Write to object store
         #[arg(short = 'w')]
-        write_to_store: Option<bool>,
+        write_to_store: bool,
         filename: String,
     },
     LsTree {
+        /// Only print the names of the files
         #[arg(long = "name-only")]
         name_only: Option<bool>,
         hash: String,

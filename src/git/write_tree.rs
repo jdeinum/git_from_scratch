@@ -1,6 +1,6 @@
 use anyhow::Result;
 use std::io::Write;
 
-pub fn write_tree_git(mut w: impl Write) -> Result<String> {
+pub fn run(mut _w: impl Write) -> Result<()> {
     todo!()
 }

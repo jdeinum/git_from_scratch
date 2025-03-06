@@ -1,14 +1,6 @@
-mod cat;
-mod hash;
-mod init;
-mod ls_tree;
-mod write_tree;
-
-pub use cat::*;
-pub use hash::*;
-pub use init::*;
-pub use ls_tree::*;
-pub use write_tree::*;
-
-pub mod parsers;
-pub mod utils;
+pub(crate) mod cat_file;
+pub(crate) mod hash_object;
+pub(crate) mod init;
+pub(crate) mod ls_tree;
+pub(crate) mod utils;
+pub(crate) mod write_tree;

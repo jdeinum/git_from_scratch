@@ -1,33 +1,33 @@
-use crate::utils::TRACING;
-use anyhow::Result;
+use crate::utils::{TRACING, create_and_swap_to_temp_dir};
+use anyhow::{Context, Result};
 use assert_cmd::Command;
-use std::path::Path;
-use std::path::PathBuf;
-use std::sync::LazyLock;
-use temp_testdir::TempDir;
+use std::{path::PathBuf, sync::LazyLock};
 
 #[test]
 pub fn test_git_init() -> Result<()> {
     // init tracing
     LazyLock::force(&TRACING);
 
-    // create a new temp directory for testing
-    let temp = TempDir::new("/tmp/rstest", false);
-    let mut full_path = PathBuf::from(temp.as_ref());
-    full_path.push(".git/");
+    // create a temporary directory and switch to that directory
+    let temp_dir = create_and_swap_to_temp_dir()
+        .context("create temp dir")
+        .unwrap();
 
-    // run the command
-    let mut cmd = Command::cargo_bin("git")?;
-    cmd.arg("init");
-    cmd.current_dir(&temp.as_ref());
+    // run the git init command
+    let output = Command::cargo_bin("git")
+        .unwrap()
+        .current_dir(&temp_dir.path())
+        .arg("init")
+        .assert();
 
-    // first assert the command ran successfully
-    cmd.assert().success();
+    // assert it ran ok
+    output.success();
 
-    // now make sure the new folder exists
-    assert!(Path::new(&full_path).exists());
-
-    // TODO: Add tests for all of the needed directories and files
+    // check to make sure the directory exists
+    // TODO: check all dirs
+    let mut p: PathBuf = PathBuf::from(temp_dir.path());
+    p.push(".git");
+    assert!(p.exists());
 
     Ok(())
 }

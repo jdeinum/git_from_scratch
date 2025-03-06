@@ -1,40 +1,28 @@
-use crate::git::utils::create_directory;
-use anyhow::Result;
-use std::path::PathBuf;
-use tracing::{debug, instrument};
+use anyhow::{Context, Result};
+use std::io::Write;
+use tracing::instrument;
 
 #[instrument(err)]
-pub fn init_git_repo(p: PathBuf) -> Result<String> {
-    // first we create the .git directory
-    create_directory(p.clone(), ".git/")?;
+pub fn run() -> Result<()> {
+    // create the .git directory
+    std::fs::create_dir(".git")
+        .context("create .git directory")
+        .context("create .git/")?;
 
-    // adjust the path for creating directories
-    let new_path = {
-        let mut x = p.clone();
-        x.push(".git/");
-        x
-    };
+    // create the .git/objects directory
+    std::fs::create_dir(".git/objects")
+        .context("create .git/objects directory")
+        .context("create .git/objects/")?;
 
-    // now the .git/objects directory
-    create_directory(new_path.clone(), "objects/")?;
+    // create the .git/refs directory
+    std::fs::create_dir(".git/refs")
+        .context("create .git/refs directory")
+        .context("create .git/refs/")?;
 
-    // now the .git/refs directory
-    create_directory(new_path.clone(), "refs/")?;
+    // create the HEAD file and write the contents to it
+    let mut f = std::fs::File::open(".git/HEAD").context("open .git/HEAD")?;
+    f.write_all(b"ref: refs/heads/main\n")
+        .context("write refs to HEAD")?;
 
-    // now we'll create the HEAD file
-    let mut head_file_path = new_path.clone();
-    head_file_path.push("HEAD");
-    std::fs::write(head_file_path, "ref: refs/heads/main\n")?;
-
-    debug!("initialized repo");
-
-    Ok(new_path.to_string_lossy().to_string())
-}
-
-#[instrument(err)]
-pub fn init_git_repo_in_current_dir() -> Result<()> {
-    let cur = std::env::current_dir()?;
-    debug!("creating git repo in {cur:?}");
-    init_git_repo(cur)?;
     Ok(())
 }
