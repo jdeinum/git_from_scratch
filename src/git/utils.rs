@@ -193,16 +193,14 @@ where
         Ok(hash.into())
     }
 
-    pub fn write_to_objects(self) -> Result<()> {
+    pub fn write_to_objects(self) -> Result<[u8; 20]> {
         // create our in memory buffer we are writing to
         let mut buf: Vec<u8> = Vec::new();
 
         // write our object
-        let hash = {
-            let h = self.write(&mut buf).context("writing object to buffer")?;
-            Ok(hex::encode(h))
-        }?;
-        let (dir, filename) = hash.split_at(2);
+        let hash = self.write(&mut buf).context("writing object to buffer")?;
+        let hash_str = hex::encode(&hash);
+        let (dir, filename) = hash_str.split_at(2);
 
         // create the directories needed
         let base_dir = format!(".git/objects/{}", dir);
@@ -217,6 +215,6 @@ where
         f.write_all(&buf)
             .with_context(|| format!("wrote buffer to {file_path}"))?;
 
-        Ok(())
+        Ok(hash)
     }
 }

@@ -1,9 +1,5 @@
-use super::parsers::parse_git_tree;
 use anyhow::Result;
-use itertools::*;
 use std::io::Write;
-use tracing::debug;
-
-pub fn run(hash: &str, name_only: bool, mut w: impl Write) -> Result<()> {
+pub fn run(_hash: &str, _name_only: bool, mut _w: impl Write) -> Result<()> {
     todo!()
 }
