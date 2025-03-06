@@ -119,6 +119,6 @@ fn create_git_tree(p: String, m: &mut HashMap<String, String>) -> Result<String>
     todo!()
 }
 
-pub fn write_tree_git(mut w: impl Write) -> Result<String> {
+pub fn run(mut w: impl Write) -> Result<()> {
     todo!()
 }

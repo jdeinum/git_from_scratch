@@ -1,7 +1,7 @@
 use crate::utils::{TRACING, create_object_and_return_hash};
 use anyhow::Result;
-use git_from_scratch::git::cat_git_object;
 use git_from_scratch::git::init_git_repo;
+use git_from_scratch::git::run;
 use std::sync::LazyLock;
 use temp_testdir::TempDir;
 
@@ -33,7 +33,7 @@ pub fn test_git_cat() -> Result<()> {
     let mut buf: Vec<u8> = Vec::new();
 
     // now cat the file
-    cat_git_object(&hash, &mut buf)?;
+    run(&hash, &mut buf)?;
 
     assert_eq!(buf, CONTENTS.as_bytes());
 
