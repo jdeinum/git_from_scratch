@@ -41,9 +41,9 @@ impl TryFrom<&str> for GitObjectType {
 }
 
 // TODO: I think this causes extra uneeded allocations
-impl Into<Vec<u8>> for GitObjectType {
-    fn into(self) -> Vec<u8> {
-        match self {
+impl From<GitObjectType> for Vec<u8> {
+    fn from(value: GitObjectType) -> Self {
+        match value {
             GitObjectType::Blob => "blob".as_bytes().to_vec(),
             GitObjectType::Tree => "tree".as_bytes().to_vec(),
             GitObjectType::Commit => "commit".as_bytes().to_vec(),
@@ -196,7 +196,7 @@ where
 
         // write our object
         let hash = self.write(&mut buf).context("writing object to buffer")?;
-        let hash_str = hex::encode(&hash);
+        let hash_str = hex::encode(hash);
         let (dir, filename) = hash_str.split_at(2);
 
         // create the directories needed
