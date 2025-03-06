@@ -36,7 +36,7 @@ pub fn test_git_hash() -> Result<()> {
     let output = std::process::Command::new("git")
         .arg("cat-file")
         .arg("-p")
-        .arg(hash)
+        .arg(hash.trim())
         .output()
         .unwrap()
         .stdout;
