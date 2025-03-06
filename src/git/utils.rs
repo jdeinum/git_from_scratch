@@ -209,8 +209,8 @@ where
 
         // write the contents of the buffer to the file
         let file_path = format!("{}/{}", base_dir, filename);
-        let mut f = std::fs::File::open(&file_path)
-            .with_context(|| format!("write object to file {file_path}"))?;
+        let mut f = std::fs::File::create(&file_path)
+            .with_context(|| format!("open object for reading: {file_path}"))?;
 
         f.write_all(&buf)
             .with_context(|| format!("wrote buffer to {file_path}"))?;
