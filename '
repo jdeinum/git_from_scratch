@@ -2,12 +2,9 @@
 *
 **/
 use anyhow::{Context, Ok, Result, bail, ensure};
-use flate2::Compression;
-use flate2::bufread::ZlibEncoder;
 use flate2::read::ZlibDecoder;
-use sha1::Digest;
 use std::ffi::CStr;
-use std::io::{BufRead, Write};
+use std::io::BufRead;
 use std::io::{BufReader, Cursor};
 use std::{fmt, io::Read, path::Path};
 
@@ -36,17 +33,6 @@ impl TryFrom<&str> for GitObjectType {
             "tree" => Ok(Self::Tree),
             "commit" => Ok(Self::Commit),
             _ => bail!("invalid kind: {value}"),
-        }
-    }
-}
-
-// TODO: I think this causes extra uneeded allocations
-impl Into<Vec<u8>> for GitObjectType {
-    fn into(self) -> Vec<u8> {
-        match self {
-            GitObjectType::Blob => "blob".as_bytes().to_vec(),
-            GitObjectType::Tree => "tree".as_bytes().to_vec(),
-            GitObjectType::Commit => "commit".as_bytes().to_vec(),
         }
     }
 }
@@ -121,7 +107,8 @@ impl GitObject<()> {
         // if we read until the nukll byte, we have both the type and the length of the payload
         let mut buf: Vec<u8> = Vec::with_capacity(64);
         let type_and_length = {
-            br.read_until(0, &mut buf)
+            let x = br
+                .read_until(0, &mut buf)
                 .context("read type and length into buf")?;
 
             CStr::from_bytes_with_nul(&buf).context("convert header into CStr")
@@ -150,73 +137,5 @@ impl GitObject<()> {
             expected_length: length,
             reader: br,
         })
-    }
-}
-
-impl<R> GitObject<R>
-where
-    R: Read,
-{
-    // TODO: A better way of doing this would be to create
-    pub fn write(mut self, mut w: impl Write) -> Result<[u8; 20]> {
-        // before we can write the bytes to storage, need the hash of the uncompressed header +
-        // bytes.
-        let mut buf: Vec<u8> = Vec::new();
-
-        // write the kind,length, and null byte using the display impl for kind
-        write!(buf, "{} {}\0", self.kind, self.expected_length)
-            .context("write kind, length, and null byte to buffer")?;
-
-        // write the rest of the bytes
-        // we can save ourselves from needing to copy into memory by just using the copy function
-        std::io::copy(&mut self.reader, &mut buf).context("copy bytes from reader to writer")?;
-
-        // now we can compute the hash of the buffer
-        let cur = Cursor::new(buf);
-        let mut encoder = ZlibEncoder::new(cur, Compression::default());
-        let mut res: Vec<u8> = Vec::new();
-        encoder
-            .read_to_end(&mut res)
-            .context("read sha1 bytes from zlib encoder")?;
-
-        // now we can hash our buf
-        let mut sha1_hasher = sha1::Sha1::new();
-        sha1_hasher
-            .write_all(&res)
-            .context("write compressed bytes into sha1 hasher")?;
-        let hash = sha1_hasher.finalize();
-
-        // finally we write the compressed bytes to file
-        w.write_all(&res)
-            .context("write compressed bytes to writer")?;
-
-        Ok(hash.into())
-    }
-
-    pub fn write_to_objects(self) -> Result<()> {
-        // create our in memory buffer we are writing to
-        let mut buf: Vec<u8> = Vec::new();
-
-        // write our object
-        let hash = {
-            let h = self.write(&mut buf).context("writing object to buffer")?;
-            Ok(hex::encode(h))
-        }?;
-        let (dir, filename) = hash.split_at(2);
-
-        // create the directories needed
-        let base_dir = format!(".git/objects/{}", dir);
-        std::fs::create_dir_all(&base_dir)
-            .with_context(|| "create directory {base_dir} to write object")?;
-
-        // write the contents of the buffer to the file
-        let file_path = format!("{}/{}", base_dir, filename);
-        let mut f = std::fs::File::open(&file_path)
-            .with_context(|| format!("write object to file {file_path}"))?;
-
-        f.write_all(&buf)
-            .with_context(|| format!("wrote buffer to {file_path}"))?;
-
-        Ok(())
     }
 }
