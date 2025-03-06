@@ -18,18 +18,14 @@ pub fn run() -> Result<()> {
     match &cli.command.context("match command")? {
         Commands::Init {} => git::init::run(),
         Commands::CatFile { hash, pretty_print } => {
-            git::cat_file::run(hash, pretty_print.into(), stdo)
+            git::cat_file::run(hash.trim(), pretty_print.into(), stdo)
         }
-        Commands::HashFile {
+        Commands::HashObject {
             write_to_store,
             filename,
-        } => git::hash_object::run(
-            Path::new(&filename),
-            write_to_store.unwrap_or(false).into(),
-            stdo,
-        ),
+        } => git::hash_object::run(Path::new(&filename), write_to_store.into(), stdo),
         Commands::LsTree { hash, name_only } => {
-            git::ls_tree::run(hash, name_only.unwrap_or(false).into(), stdo)
+            git::ls_tree::run(hash.trim(), name_only.unwrap_or(false).into(), stdo)
         }
         Commands::WriteTree {} => git::write_tree::run(stdo),
     }

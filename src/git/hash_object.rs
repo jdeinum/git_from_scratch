@@ -11,8 +11,8 @@ pub enum StoreHash {
     Yes,
 }
 
-impl From<bool> for StoreHash {
-    fn from(value: bool) -> Self {
+impl From<&bool> for StoreHash {
+    fn from(value: &bool) -> Self {
         match value {
             true => Self::Yes,
             false => Self::No,

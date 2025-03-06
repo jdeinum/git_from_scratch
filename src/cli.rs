@@ -17,10 +17,10 @@ pub enum Commands {
         pretty_print: bool,
         hash: String,
     },
-    HashFile {
+    HashObject {
         /// Write to object store
         #[arg(short = 'w')]
-        write_to_store: Option<bool>,
+        write_to_store: bool,
         filename: String,
     },
     LsTree {

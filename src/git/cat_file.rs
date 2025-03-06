@@ -1,7 +1,8 @@
-use anyhow::{Result, ensure};
+use crate::git::utils::GitObject;
+use anyhow::{Context, Result, ensure};
 use std::io::Write;
-use tracing::debug;
 
+#[derive(PartialEq, PartialOrd, Debug)]
 pub enum PrettyPrint {
     Yes,
     No,
@@ -17,5 +18,15 @@ impl From<&bool> for PrettyPrint {
 }
 
 pub fn run(hash: &str, pretty_print: PrettyPrint, mut w: impl Write) -> Result<()> {
-    todo!()
+    ensure!(
+        pretty_print == PrettyPrint::Yes,
+        "not sure how to not pretty print"
+    );
+
+    // read the object
+    let mut obj = GitObject::read(hash).context("get git object from hash")?;
+
+    std::io::copy(&mut obj.reader, &mut w).context("copying contents of object to writer")?;
+
+    Ok(())
 }

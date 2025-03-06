@@ -55,9 +55,9 @@ impl Into<Vec<u8>> for GitObjectType {
 // kind, and a reader that you can use to read the remaining bytes fr with the correct kind, and a
 // reader that you can use to read the remaining bytes from.
 pub(crate) struct GitObject<R> {
-    kind: GitObjectType,
-    expected_length: usize,
-    reader: R,
+    pub(crate) kind: GitObjectType,
+    pub(crate) expected_length: usize,
+    pub(crate) reader: R,
 }
 
 impl GitObject<()> {

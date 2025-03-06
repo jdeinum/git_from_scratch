@@ -7,6 +7,6 @@ fn main() {
 
     // run the app
     if let Err(e) = run::run() {
-        error!("Error: {e}");
+        error!("Error: {e:?}");
     }
 }
