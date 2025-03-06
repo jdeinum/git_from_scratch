@@ -27,6 +27,5 @@ pub fn run(filename: &Path, should_hash: StoreHash, mut w: impl Write) -> Result
     }?;
 
     let str_hash = hex::encode(hash);
-    w.write_all(str_hash.as_bytes())
-        .context("write hash to writer")
+    writeln!(w, "{str_hash}").context("write hash to writer")
 }

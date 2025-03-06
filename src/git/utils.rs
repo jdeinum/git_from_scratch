@@ -168,11 +168,10 @@ where
             .context("write kind, length, and null byte to buffer")?;
 
         // write the rest of the bytes
-        // we can save ourselves from needing to copy into memory by just using the copy function
         std::io::copy(&mut self.reader, &mut buf).context("copy bytes from reader to writer")?;
 
         // now we can compute the hash of the buffer
-        let cur = Cursor::new(buf);
+        let cur = Cursor::new(&buf);
         let mut encoder = ZlibEncoder::new(cur, Compression::default());
         let mut res: Vec<u8> = Vec::new();
         encoder
@@ -181,9 +180,7 @@ where
 
         // now we can hash our buf
         let mut sha1_hasher = sha1::Sha1::new();
-        sha1_hasher
-            .write_all(&res)
-            .context("write compressed bytes into sha1 hasher")?;
+        sha1_hasher.update(&buf[..]);
         let hash = sha1_hasher.finalize();
 
         // finally we write the compressed bytes to file
