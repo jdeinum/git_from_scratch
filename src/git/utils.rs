@@ -11,6 +11,7 @@ use std::io::{BufRead, Write};
 use std::io::{BufReader, Cursor};
 use std::{fmt, io::Read, path::Path};
 
+#[derive(PartialEq, PartialOrd, Debug)]
 pub(crate) enum GitObjectType {
     Blob,
     Tree,
