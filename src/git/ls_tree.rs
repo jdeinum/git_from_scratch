@@ -5,6 +5,8 @@ use std::{
     io::{BufRead, Read, Write},
 };
 pub fn run(hash: &str, name_only: bool, mut w: impl Write) -> Result<()> {
+    ensure!(name_only == true, "only know how to print names");
+
     // read in the object
     let mut obj = GitObject::read(hash).context("read git object in ls_tree")?;
     ensure!(
@@ -20,6 +22,9 @@ pub fn run(hash: &str, name_only: bool, mut w: impl Write) -> Result<()> {
     let mut sha_buf: [u8; 20] = [0; 20];
 
     loop {
+        // clear the buffer
+        buf.clear();
+
         // read until the null byte
         let n = obj
             .reader
@@ -32,7 +37,8 @@ pub fn run(hash: &str, name_only: bool, mut w: impl Write) -> Result<()> {
         }
 
         // convert the mode and name into a CStr
-        let mode_and_name = CStr::from_bytes_with_nul(&buf[..n])?;
+        let mode_and_name =
+            CStr::from_bytes_with_nul(&buf[..n]).context("convert mode and name to CStr")?;
 
         // convert the CStr to a valid UTF-8 str
         let mode_and_name = mode_and_name
@@ -45,14 +51,15 @@ pub fn run(hash: &str, name_only: bool, mut w: impl Write) -> Result<()> {
             .context("no space in tree entry")?;
 
         // read the sha
+        // TODO: I would like to use take, but it consumes the reader that its reading from
+        // running into ownership issues
         obj.reader
             .read_exact(&mut sha_buf)
             .context("read 20 byte tree sha entry")?;
 
         // write to the output stream
         if name_only {
-            w.write_all(name.as_bytes())
-                .context("write name to writer")?;
+            writeln!(w, "{name}").context("write name to writer")?;
         }
     }
 

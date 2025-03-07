@@ -24,9 +24,7 @@ pub fn run() -> Result<()> {
             write_to_store,
             filename,
         } => git::hash_object::run(Path::new(&filename), write_to_store.into(), stdo),
-        Commands::LsTree { hash, name_only } => {
-            git::ls_tree::run(hash.trim(), name_only.unwrap_or(false), stdo)
-        }
+        Commands::LsTree { hash, name_only } => git::ls_tree::run(hash.trim(), *name_only, stdo),
         Commands::WriteTree {} => git::write_tree::run(stdo),
     }
     .context("run command")

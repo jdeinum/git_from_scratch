@@ -26,7 +26,7 @@ pub enum Commands {
     LsTree {
         /// Only print the names of the files
         #[arg(long = "name-only")]
-        name_only: Option<bool>,
+        name_only: bool,
         hash: String,
     },
     WriteTree {},
