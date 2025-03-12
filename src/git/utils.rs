@@ -158,7 +158,6 @@ impl<R> GitObject<R>
 where
     R: Read,
 {
-    // TODO: A better way of doing this would be to create
     pub fn write(mut self, mut w: impl Write) -> Result<[u8; 20]> {
         // before we can write the bytes to storage, need the hash of the uncompressed header +
         // bytes.
